@@ -1,0 +1,121 @@
+import tkinter as tk
+from tkinter import *
+from tkinter import ttk
+from datetime import datetime
+import requests
+from PIL import ImageTk, Image
+from tkinter import messagebox
+
+root = tk.Tk()
+root.geometry("600x270")
+root.title("Currency Converter")
+root.iconbitmap('icon.ico')
+root.maxsize(600,270)
+root.minsize(600,270)
+
+image = Image.open('currency.png')
+zoom = 0.15
+
+# multiple image size by zoom
+pixels_x, pixels_y = tuple([int(zoom*x) for x in image.size])
+
+img = ImageTk.PhotoImage(image.resize((pixels_x,pixels_y)))
+panel = Label(root,image=img)
+panel.place(x=205,y=30)
+
+def show_data():
+    amount = E1.get()
+    from_currency = c1.get()
+    to_currency = c2.get()
+    
+
+    if amount == '':
+        messagebox.showerror("Currency Converter", "Please Fill the Amount")
+    elif from_currency == '':
+        messagebox.showerror("Currency Converter", "Please Choose the From Currency")
+    elif to_currency == '':
+        messagebox.showerror("Currency Converter", "Please Choose the To Currency")
+        
+    else:
+        
+        url = f"https://api.apilayer.com/currency_data/convert?to={to_currency}&from={from_currency}&amount={amount}"
+        payload = {}
+        headers = {
+        "apikey": "0aF6sSIX42bNDjTbur689YBGXJeBBfBR"
+        }
+        response = requests.request("GET", url, headers=headers, data=payload)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data['success']:
+                result = data['result']
+                E2.delete(0, END)
+                E2.insert(0, result)
+                text.insert('end', f'{amount} {from_currency} equals {result} {to_currency} \n\nLast Updated: {datetime.now()}\n\n')
+            else:
+                messagebox.showerror("Currency Converter", "Failed to retrieve data")
+        else:
+            messagebox.showerror("Currency Converter", "Error fetching data")
+            
+def clear():
+    E1.delete(0,'end')
+    E2.delete(0,'end')
+    text.delete(1.0,'end')
+    
+l1 = Label(root,text="USD Currency Converter Using Python",font={'verdana','10','bold'})
+l1.place(x=150,y=5)
+
+amt = Label(root,text="Amount",font=('roboto',10,'bold'))
+amt.place(x=20,y=15)
+E1 = Entry(root,width=20,borderwidth=1,font=('roboto',10,'bold'))
+E1.place(x=20,y=40)
+
+c1 = tk.StringVar()
+c2 = tk.StringVar()
+currencychoose1 = ttk.Combobox(root,width=20,textvariable = c1,state='readonly',font=('verdana',"10",'bold'))
+
+# Adding Comobox drop down list
+currencychoose1['values'] = ( 'USD',)
+
+currencychoose1.place(x=300,y=40)
+currencychoose1.current(0)
+
+E2 = Entry(root,width=20,borderwidth=1,font=('roboto',10,'bold'))
+E2.place(x=20,y=80)
+
+currencychoose2 = ttk.Combobox(root,width=20, textvariable = c2,state='readonly',font=('verdana','10','bold'))
+
+currencychoose2['values'] = (
+                            "AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", 
+    "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTC", 
+    "BTN", "BWP", "BYN", "BYR", "BZD", "CAD", "CDF", "CHF", "CLF", "CLP", "CNH", 
+    "CNY", "COP", "CRC", "CUC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", 
+    "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "GBP", "GEL", "GGP", "GHS", "GIP", 
+    "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", 
+    "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", 
+    "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", 
+    "LSL", "LTL", "LVL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", 
+    "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", 
+    "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", 
+    "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", 
+    "SLE", "SLL", "SOS", "SRD", "STD", "SVC", "SYP", "SZL", "THB", "TJS", "TMT", 
+    "TND", "TOP", "TRY", "TTD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", 
+    "VEF", "VES", "VND", "VUV", "WST", "XAF", "XAG", "XAU", "XCD", "XDR", "XOF", 
+    "XPF", "YER", "ZAR", "ZMK", "ZMW", "ZWL"
+                            )
+
+
+currencychoose2.place(x=300,y=70)
+currencychoose2.current()
+
+text = Text(root,height=7,width=52,font=('verdana','10','bold'))
+text.place(x=100,y=120)
+
+B = Button(root, text="Search",command=show_data,font=('verdana','10','bold'),borderwidth=2,bg="red",fg="white")
+B.place(x=20,y=120)
+
+clear= Button(root,text="Clear",command=clear,font=('verdana','10','bold'),borderwidth=2,bg="blue",fg="white")
+clear.place(x=20,y=170)
+
+
+root.mainloop()
